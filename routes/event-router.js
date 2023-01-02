@@ -4,6 +4,7 @@ const jsonwebtoken=require("jsonwebtoken");
 const eventRouter=express.Router();
 const eventCollection=require("../model/event-model");
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
+console.log("inside event router");
 
 eventRouter
   .route("/")
@@ -47,6 +48,7 @@ function protectedRouter(req,res,next){
 async function getAllEvents(req,res){
     try{
         // console.log("get all events here ",req);
+        console.log("get all events here ");        
         const allEvents=await eventCollection.find({});
         res.send({
             message:"Obtained all the events",
