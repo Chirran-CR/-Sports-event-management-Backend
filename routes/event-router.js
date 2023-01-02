@@ -46,7 +46,7 @@ function protectedRouter(req,res,next){
 
 async function getAllEvents(req,res){
     try{
-        console.log("get all events here ",req);
+        // console.log("get all events here ",req);
         const allEvents=await eventCollection.find({});
         res.send({
             message:"Obtained all the events",
