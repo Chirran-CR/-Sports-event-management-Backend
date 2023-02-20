@@ -32,16 +32,17 @@ app.use(cors(corsOrigin));
 //         data:req.body
 //     })
 // })
+console.log("val of __dirname is:",__dirname);
+app.use("/event/student",studentEventRouter);
 app.use("/teacher",teacherRouter);
 app.use("/auth",authRouter);
 app.use("/event",eventRouter);
-app.use("/event/student",studentEventRouter);
 // app.use("/event/student",participatedEventRouter);
 // app.use(express.static(path.join(__dirname,"./frontend/build")));
 // app.get("*",(req,res)=>{
-//      res.sendFile(path.join(__dirname,"./frontend/build/index.html"));
-// });
-
+    //      res.sendFile(path.join(__dirname,"./frontend/build/index.html"));
+    // });
+app.use("/images",express.static(path.join(__dirname,'uploads')));
 app.listen(port,()=>{
     console.log(`Server is listening at port: ${port}`);
 });

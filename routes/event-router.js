@@ -1,17 +1,40 @@
 const express=require("express");
 const jsonwebtoken=require("jsonwebtoken");
+const multer=require("multer");
+const path=require("path");
+
 
 const eventRouter=express.Router();
 const eventCollection=require("../model/event-model");
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
 console.log("inside event router");
 
+const storage=multer.diskStorage({
+    destination:function(req,file,cb){
+      cb(null,"uploads/eventPics");
+    },
+    filename:function (req,file,cb){
+      cb(null,Date.now()+ path.extname(file.originalname));
+    }
+  })
+  
+  const fileFilter =(req,file,cb)=>{
+    const allowedFileType=['image/jpeg','image/jpg','image/png'];
+    if(allowedFileType.includes(file.mimetype)){
+      cb(null,true);
+    }else{
+      cb(null,false);
+    }
+  }
+  const upload=multer({storage:storage,fileFilter});
+
+
 eventRouter
   .route("/")
   .get(getAllEvents)
 eventRouter
   .route("/add")
-  .post(protectedRouter,addEvent)
+  .post(protectedRouter,upload.single("eventBanner"),addEvent)
 eventRouter
   .route("/update/:id")
   .patch(protectedRouter,updateEvent)
@@ -65,8 +88,11 @@ async function getAllEvents(req,res){
 }
 
 async function addEvent(req,res){
+    console.log("val of req.body is:",req.body);
+    console.log("val of req.file is:",req.file);
    try{
         const receivedEvent=req.body;
+        receivedEvent.eventBanner=req.file.filename;
         const addedEvent=await eventCollection.create(receivedEvent);
         res.send({
              message:"Event added successfully..",

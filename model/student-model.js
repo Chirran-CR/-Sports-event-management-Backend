@@ -22,6 +22,9 @@ const studentSchema=new mongoose.Schema({
      collegeName:{
         type:String,
         required:true
+     },
+     profilePic:{
+      type:String,
      }
 });
 studentSchema.pre("save",async function (){

@@ -1,18 +1,44 @@
 const express = require("express");
 const bcrypt=require("bcrypt");
 const jsonwebtoken=require("jsonwebtoken");
+const multer=require("multer");
+const path=require("path");
 
 const authRouter = express.Router();
 const teacherCollection = require("../model/teacher-model");
 const studentCollection = require("../model/student-model");
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
 
+
+const storage=multer.diskStorage({
+  destination:function(req,file,cb){
+    cb(null,"uploads/profilePics");
+  },
+  filename:function (req,file,cb){
+    cb(null,Date.now()+ path.extname(file.originalname));
+  }
+})
+
+const fileFilter =(req,file,cb)=>{
+  const allowedFileType=['image/jpeg','image/jpg','image/png'];
+  if(allowedFileType.includes(file.mimetype)){
+    cb(null,true);
+  }else{
+    cb(null,false);
+  }
+}
+const upload=multer({storage:storage,fileFilter});
+
+
 authRouter.route("/teacher/login").post(teacherLogin);
-authRouter.route("/teacher/signup").post(teacherSignup);
+authRouter.route("/teacher/signup").post(upload.single("profilePic"),teacherSignup);
 authRouter.route("/teacher/logout").get(teacherLogout);
 authRouter.route("/student/login").post(studentLogin);
-authRouter.route("/student/signup").post(studentSignup);
+authRouter.route("/student/signup").post(upload.single("profilePic"),studentSignup);
 authRouter.route("/student/logout").get(studentLogout);
+
+
+
 
 async function teacherLogin(req, res) {
   try{
@@ -68,6 +94,7 @@ function teacherLogout(req,res){
 async function teacherSignup(req, res) {
   const teacherData = req.body;
   console.log("teacher data:",teacherData);
+  teacherData.profilePic=req.file.filename;
   try {
     const teacherDoc=new teacherCollection(teacherData);
     const savedTeacherData=await teacherDoc.save();
@@ -139,6 +166,10 @@ function studentLogout(req,res){
 
 async function studentSignup(req, res) {
   const studentData = req.body;
+  console.log("value of req is:",req);
+  console.log("Student data received is:",studentData);
+  console.log("req.file is:",req.file);
+  studentData.profilePic=req.file.filename;
   try {
     const studentDoc=new studentCollection(studentData);
     const savedStudentData=await studentDoc.save();

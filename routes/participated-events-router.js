@@ -1,3 +1,5 @@
+//was used before modifying database
+
 const express=require("express");
 const jsonwebtoken=require("jsonwebtoken");
 
@@ -7,10 +9,10 @@ const jsonSecretKey=process.env.JSON_SECRET_KEY;
 
 participatedEventRouter
   .route("/:id")
-  .get(protectedRouter,getAllParticipatingEvents)
+  .get(getAllParticipatingEvents)
 participatedEventRouter
   .route("/add")
-  .post(protectedRouter,addParticipatingEvent)
+  .post(addParticipatingEvent)
 
 let studentId;
 function protectedRouter(req,res,next){
@@ -42,10 +44,12 @@ function protectedRouter(req,res,next){
 async function getAllParticipatingEvents(req,res){
     try{
         const studId=req.params.id;
-        const allParticipatingEvents=await studentEventCollection.find({participatedEvent:{$elemMatch:{"studentId":studId}}});
+        // const allParticipatingEvents=await participatedEventCollection.find({participatedEvent:{$elemMatch:{"studentId":studId}}});
+        const allParticipatingEvents=await participatedEventCollection.find({studentId:studId});
+       
         res.send({
             message:"Obtained all the events for the asked student",
-            allEventsDetails:allParticipatingEvents
+            participatedEventsDetails:allParticipatingEvents
         })
     }catch(err){
         console.log("Error in getAllParticipatingEvents function..",err);
