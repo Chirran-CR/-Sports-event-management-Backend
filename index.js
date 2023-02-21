@@ -14,7 +14,8 @@ const teacherRouter=require("./routes/teacher-router");
 const authRouter=require("./routes/auth-router");
 const eventRouter=require("./routes/event-router");
 const studentEventRouter=require("./routes/student-event-router");
-const participatedEventRouter=require("./routes/participated-events-router");
+const teacherEventUploadRouter=require("./routes/teacher-event-upload-router");
+// const participatedEventRouter=require("./routes/participated-events-router");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -34,6 +35,7 @@ app.use(cors(corsOrigin));
 // })
 console.log("val of __dirname is:",__dirname);
 app.use("/event/student",studentEventRouter);
+app.use("/event/teacher",teacherEventUploadRouter);
 app.use("/teacher",teacherRouter);
 app.use("/auth",authRouter);
 app.use("/event",eventRouter);
