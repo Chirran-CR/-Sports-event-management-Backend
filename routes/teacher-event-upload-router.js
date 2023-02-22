@@ -3,6 +3,7 @@ const jsonwebtoken=require("jsonwebtoken");
 
 const teacherEventUploadRouter=express.Router();
 const teacherEventUploadCollection=require("../model/teacher-event-upload-model");
+const eventCollection=require("../model/event-model");
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
 
 teacherEventUploadRouter
@@ -68,7 +69,10 @@ async function getAllUploadedEvents(req,res){
  
 }
 async function updateEvent(req,res){
+    //update the teacherEventUploadCollection---
     let teachId=req.params.id;
+    let eventId=req.body.eventId;
+
     console.log("teach id inside updateEvent is:",teachId);
     let teacherObjArray=await teacherEventUploadCollection.find({teacherId:teachId}); 
     console.log("Val of studentObj is:",teacherObjArray);
@@ -90,13 +94,21 @@ async function updateEvent(req,res){
     const updatedTeacherEventUpload=await teacherEventUploadCollection.findOneAndUpdate({teacherId:teachId},{eventsArray:changedEventsArray},{returnOriginal: false})
 
     console.log("Val of updatedStudentParticipation is:",updatedTeacherEventUpload);
+    //update the eventCollection--
+    // const eventObjArray=await eventCollection.find({_id:eventId});
+    // console.log("Val of eventObject is:",eventObjArray[0]);
+    const sportsCategory=[...req.body.sportsCategory];
+    const participatingClgs=[...req.body.participatingClgs];
+    const eventObj=await eventCollection.findOneAndUpdate({_id:eventId},{sportsCategory:sportsCategory,participatingColleges:participatingClgs},{returnOriginal:false});
+    console.log("Val of eventObj after update is:",eventObj);
     try {
         console.log("Val of req.body inside updateEvent is:",req.body);
         res.send({
             message:"Obtained all the events",
             // updatedStudentParticipation:updatedStudentParticipation
             // participatedEventsDetails:allParticipatingEvents
-            updatedTeacherEventUpload:updatedTeacherEventUpload
+            updatedTeacherEventUpload:updatedTeacherEventUpload,
+            eventObj:eventObj
         })
     } catch (error) {
         console.log("Error in updateEvent fn:",err);
@@ -158,6 +170,7 @@ async function addEvent(req,res){
 }
 
 async function deleteEvent(req,res){
+    //update teacherEventUploadCollection
     const teachId=req.params.id;
     console.log("Val of teachId is:",teachId);
     console.log("Val of req.body is:",req.body);//{ event_id: '638c15f5d1877203f6f52c97' }
@@ -172,11 +185,17 @@ async function deleteEvent(req,res){
 
     const afterDeletionTeacherUploadedEvent=await teacherEventUploadCollection.findOneAndUpdate({teacherId:teachId},{eventsArray:changedEventsArray},{returnOriginal: false})
     console.log("Val of updatedTeacherCollection is:",afterDeletionTeacherUploadedEvent);
-
+    //delete the event from the eventCollection
+    const remainingEventsAfterDelete=await eventCollection.findOneAndDelete({_id:eventId},{returnOriginal:false});
+    console.log("Remaining event after delete is:",remainingEventsAfterDelete);
+   //update the eventsArray of studentEventCollection(i.e delete the event from eventsArray)
+    
     try{
         res.send({
             message:"Event deleted successfully",
-            afterDeletionTeacherUploadedEvent:afterDeletionTeacherUploadedEvent
+            afterDeletionTeacherUploadedEvent:afterDeletionTeacherUploadedEvent,
+            remainingEventsAfterDelete:remainingEventsAfterDelete,
+
         })
     }catch(error){
         console.log("Error in event delete fn:",err);
