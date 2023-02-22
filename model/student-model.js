@@ -11,6 +11,10 @@ const studentSchema=new mongoose.Schema({
         required:true,
         unique:[true,"Email ID must be unique"]
      },
+     gender:{
+      type:String,
+      required:true,
+     },
      password:{
         type:String,
         required:true,

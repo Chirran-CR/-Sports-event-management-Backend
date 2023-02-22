@@ -17,6 +17,10 @@ const eventSchema=new mongoose.Schema({
         type:[String],
         default:[]
      },
+     participatingStudents:{
+       type:[String],
+       default:[]
+     },
      sportsCategory:{
         type:[String],
         required:true

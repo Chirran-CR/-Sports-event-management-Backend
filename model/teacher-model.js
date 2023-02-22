@@ -16,6 +16,9 @@ const teacherSchema=new mongoose.Schema({
             }
         }
     },
+    gender:{
+        type:String
+    },
     password:{
         type:String,
         required:true,

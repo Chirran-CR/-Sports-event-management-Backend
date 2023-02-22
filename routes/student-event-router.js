@@ -3,6 +3,7 @@ const jsonwebtoken=require("jsonwebtoken");
 
 const studentEventRouter=express.Router();
 const studentEventCollection=require("../model/student-event-model");
+const eventCollection=require("../model/event-model");
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
 
 studentEventRouter
@@ -138,9 +139,20 @@ async function addParticipatingEvent(req,res){
             
             eventDoc=await studentEventCollection.create(notAlreadyExistData);
         }
+       //add participatingStudent to eventCollection
+        const receivedEvent=await eventCollection.find({_id:req.body.eventId});
+        console.log("Val of receivedEvent is:",receivedEvent);
+        let updatedEvent=receivedEvent[0];
+        if(!(receivedEvent[0].participatingStudents.includes(studentId))){
+            const participatingStudents=[...receivedEvent[0]?.participatingStudents,studentId];
+            updatedEvent=await eventCollection.findOneAndUpdate({_id:req.body.eventId},{participatingStudents:participatingStudents},{returnOriginal:false});
+        }
+
+        
         res.send({
              message:"Event added successfully..",
-             addedEventDetails:eventDoc
+             addedEventDetails:eventDoc,
+             updatedEvent:updatedEvent
         })
    }catch(err){
     console.log("Error in addParticipatingEvent fn:",err);

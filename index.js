@@ -15,6 +15,7 @@ const authRouter=require("./routes/auth-router");
 const eventRouter=require("./routes/event-router");
 const studentEventRouter=require("./routes/student-event-router");
 const teacherEventUploadRouter=require("./routes/teacher-event-upload-router");
+const selectParticipantRouter=require("./routes/select-participant-router");
 // const participatedEventRouter=require("./routes/participated-events-router");
 
 app.use(express.json());
@@ -45,6 +46,7 @@ app.use("/event",eventRouter);
     //      res.sendFile(path.join(__dirname,"./frontend/build/index.html"));
     // });
 app.use("/images",express.static(path.join(__dirname,'uploads')));
+app.use("/selectparticipant",selectParticipantRouter);
 app.listen(port,()=>{
     console.log(`Server is listening at port: ${port}`);
 });
