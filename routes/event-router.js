@@ -2,10 +2,13 @@ const express=require("express");
 const jsonwebtoken=require("jsonwebtoken");
 const multer=require("multer");
 const path=require("path");
+const nodemailer=require("nodemailer");
 
 
 const eventRouter=express.Router();
 const eventCollection=require("../model/event-model");
+const subscribedUserCollection=require("../model/subscribed-user-model");
+
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
 console.log("inside event router");
 
@@ -86,7 +89,38 @@ async function getAllEvents(req,res){
     }
 
 }
-
+function sendMailToSubscriber(subscriberEmail){
+    try{
+      const transporter=nodemailer.createTransport({
+        service:"gmail",
+        auth:{
+          user:process.env.MAIL_ID,
+          pass:process.env.MAIL_PSD,
+        }
+      })
+      const mailOptions={
+         from:process.env.MAIL_ID,
+         to:subscriberEmail,
+         subject:"HURRAHHH...! A New Event...!",
+         html:`<h1>Greetings from Chirran..!</h1>
+               <h2>A new event of your interest has been uploaded in sports event management platform.
+                   You can go and check it out.</h2>
+               <h2>Thank you</h2>`
+        }
+      transporter.sendMail(mailOptions,(error,info)=>{
+        if(error){
+          console.log("Error inside transporter.sendMail function & error is:",error);
+        }else{
+          console.log("Email sent & info.resposne is:"+info.response);
+          console.log("Val of info is:",info);
+          return info;
+        }
+      })  
+    }catch(err){
+      console.log("Error in sendMailToSubscriber function ..",err.message);
+      return err.message;
+    }
+}
 async function addEvent(req,res){
     console.log("val of req.body is:",req.body);
     console.log("val of req.file is:",req.file);
@@ -94,9 +128,33 @@ async function addEvent(req,res){
         const receivedEvent=req.body;
         receivedEvent.eventBanner=req.file.filename;
         const addedEvent=await eventCollection.create(receivedEvent);
+        const allSubscribersRes=await subscribedUserCollection.find({});
+        console.log("Val of allSubscriberRes is",allSubscribersRes)//received array of subscriber Obj
+        const emailOfSubscribedUser=allSubscribersRes.map((user)=>{
+           if(user.favSport == "All" && user.interestedClg == "All"){
+            return user.email;
+           }else if(user.favSport != "All" && user.interestedClg == "All"){
+             if(req.body.sportsCategory.includes(user.favSport)){
+              return user.email;
+             }
+           }else if(user.favSport == "All" && user.interestedClg != "All"){
+             if(req.body.participatingColleges.includes(user.interestedClg)){
+               return user.email;
+             }
+           }else{
+             if(req.body.sportsCategory.includes(user.favSport) && req.body.participatingColleges.includes(user.interestedClg)){
+              return user.email;
+             }
+           }
+        })
+        const allTheInfo = emailOfSubscribedUser.map((mailId)=>{
+          sendMailToSubscriber(mailId);
+        })
+        console.log("Val of all the info from sentMail function:",allTheInfo);
         res.send({
              message:"Event added successfully..",
-             addedEventDetails:addedEvent
+             addedEventDetails:addedEvent,
+             allTheInfo:allTheInfo
         })
    }catch(err){
     console.log("Error in addEvent fn:",err);
