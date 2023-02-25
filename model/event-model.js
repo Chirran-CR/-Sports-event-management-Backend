@@ -25,6 +25,19 @@ const eventSchema=new mongoose.Schema({
         type:[String],
         required:true
      },
+     selectedStudents:[{
+      selectedSport:{
+         type:String
+      },
+      studentInfo:[{
+       studentId:String,
+       profilePic:String,
+       name:String,
+       email:String,
+       collegeName:String,
+       gender:String,
+       participatingSports:[String],
+     }]}],
      venue:{
         type:String,
         required:true,

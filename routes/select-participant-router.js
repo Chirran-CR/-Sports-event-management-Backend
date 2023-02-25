@@ -28,19 +28,21 @@ async function sendDetails(req,res){
     for(let id of uploadedEventId){
         let obj={eventId:id};
         const eventObj=await eventCollection.find({_id:id});
-        console.log("Val of eventObj inside map of selectParticipant is:",eventObj);
-        obj.eventName=eventObj[0].eventName;
-        obj.TeacherEmail=eventObj[0].TeacherEmail;
-        obj.hostingCollege=eventObj[0].hostingCollege;
-        obj.participatingColleges=eventObj[0].participatingColleges;
-        obj.sportsCategory=eventObj[0].sportsCategory;
-        obj.participatingStudents=[];
-        eventObj[0]?.participatingStudents?.map((sId)=>{
-            obj.participatingStudents.push({studentId:sId})
-        })
-        obj.venue=eventObj[0].venue;
+        if(eventObj.length >0){
+            console.log("Val of eventObj inside map of selectParticipant is:",eventObj);
+            obj.eventName=eventObj[0].eventName;
+            obj.TeacherEmail=eventObj[0].TeacherEmail;
+            obj.hostingCollege=eventObj[0].hostingCollege;
+            obj.participatingColleges=eventObj[0].participatingColleges;
+            obj.sportsCategory=eventObj[0].sportsCategory;
+            obj.participatingStudents=[];
+            eventObj[0]?.participatingStudents?.map((sId)=>{
+                obj.participatingStudents.push({studentId:sId})
+            })
+            obj.venue=eventObj[0].venue;
 
-        sendDetailsObj.push(obj);
+            sendDetailsObj.push(obj);
+        }
     }
     for(let obj of sendDetailsObj){
         for(let studObj of obj.participatingStudents){

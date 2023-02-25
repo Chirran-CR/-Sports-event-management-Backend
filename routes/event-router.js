@@ -39,6 +39,12 @@ eventRouter
   .route("/add")
   .post(protectedRouter,upload.single("eventBanner"),addEvent)
 eventRouter
+  .route("/addselectedstudent/:id")
+  .post(addSelectedStudent);
+eventRouter
+  .route("/getselectedstudent/:id")
+  .get(getSelectedStudent);
+eventRouter
   .route("/update/:id")
   .patch(protectedRouter,updateEvent)
 eventRouter
@@ -164,7 +170,52 @@ async function addEvent(req,res){
     })
    }
 }
-
+async function getSelectedStudent(req,res){
+  const eventId=req.params.id;
+  console.log("val of req.body in getSelectedStudent is:",req.body);
+  try{
+    const eventObjRes=await eventCollection.find({_id:eventId});
+    const selectedStudents=[...eventObjRes[0].selectedStudents];
+    console.log("Val of selectedStudents inside getSelected function:",selectedStudents);
+        res.send({
+             message:"Selected student obtained successfully..",
+             allSelectedStudent:selectedStudents,
+        })
+  }catch(err){
+    console.log("Error in getSelectedEvent fn:",err);
+    res.send({
+        message:"Error in getSelectedEvent fn",
+        errorDetails:err
+    })
+  }
+}
+async function addSelectedStudent(req,res){
+  const eventId=req.params.id;
+  console.log("Val of req.body inside addSelectedStudent is:",req.body);
+  const eventObjRes=await eventCollection.find({_id:eventId});
+  // eventObjRes[0].selectedStudents = [...req.body];
+  // console.log("Val of eventObjRes is:",eventObjRes);
+  const selectedStudentsForSingleSport={
+    selectedSport:req.body.selectedSport,
+    studentInfo:[...req.body.sendSelectedStudent]
+  }
+  const selectedStudents=[...eventObjRes[0].selectedStudents,selectedStudentsForSingleSport];
+  const afterAddingSelectedStudentRes=await eventCollection.findOneAndUpdate({_id:eventId},{selectedStudents:selectedStudents},{returnOriginal:false});
+  console.log("Val of afterAddingSelectedStudentRes is:",afterAddingSelectedStudentRes);
+  try{
+    res.send({
+      message:"Selected Student added in the event Collection successfully",
+      // eventObjRes:eventObjRes,
+      afterAddingSelectedStudentRes:afterAddingSelectedStudentRes
+    })
+  }catch(err){
+    console.log("Error in addSelectedStudent fn:",err);
+    res.send({
+        message:"Error in addSelectedStudent fn",
+        errorDetails:err
+    })
+  }
+}
 async function deleteEvent(req,res){
     try{
         const eventId=req.params.id;
