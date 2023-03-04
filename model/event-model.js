@@ -38,6 +38,29 @@ const eventSchema=new mongoose.Schema({
        gender:String,
        participatingSports:[String],
      }]}],
+     result:[{
+      selectedSport:{
+         type:String
+      },
+      winnerStudentInfo:{
+         studentId:String,
+         profilePic:String,
+         name:String,
+         email:String,
+         collegeName:String,
+         gender:String,
+         participatingSports:[String],
+      },
+      runnersUpStudentInfo:{
+         studentId:String,
+         profilePic:String,
+         name:String,
+         email:String,
+         collegeName:String,
+         gender:String,
+         participatingSports:[String],
+      }
+     }],
      venue:{
         type:String,
         required:true,

@@ -42,6 +42,12 @@ eventRouter
   .route("/addselectedstudent/:id")
   .post(addSelectedStudent);
 eventRouter
+  .route("/addresult/:id")
+  .post(addEventResult);
+eventRouter
+  .route("/getresult/:id")
+  .get(getResult);
+eventRouter
   .route("/getselectedstudent/:id")
   .get(getSelectedStudent);
 eventRouter
@@ -216,6 +222,47 @@ async function addSelectedStudent(req,res){
     })
   }
 }
+async function addEventResult(req,res){
+  const eventId=req.params.id;
+  console.log("Val of req.body inside addEvnetRes is:",req.body);
+  const eventObjRes=await eventCollection.find({_id:eventId});
+  const updatedResult=[...eventObjRes[0].result,{...req.body}];
+  console.log("val of updatedRes is:",updatedResult);
+  const afterAddingResult=await eventCollection.findOneAndUpdate({_id:eventId},{result:updatedResult},{returnOriginal:false});
+  try{
+     res.send({
+      message:"Result added successfully",
+      updatedRes:updatedResult,
+      afterAddingResult:afterAddingResult,
+     })
+  }catch(err){
+    console.log("Error in addEventResult fn:",err);
+    res.send({
+        message:"Error in addEventResult fn",
+        errorDetails:err
+    })
+  }
+}
+async function getResult(req,res){
+  console.log("Inside getResult of eventRouter..");
+  const eventId=req.params.id;
+  const eventRes=await eventCollection.find({_id:eventId});
+  const resultOfEvent=eventRes[0].result;
+  console.log("Val of resultOFEvent is:",resultOfEvent);
+  try{
+    res.send({
+      message:"Results of event received successfully",
+      resultOfEvent:resultOfEvent
+    })
+  }catch(err){
+    console.log("Error in getResult fn:",err);
+    res.send({
+        message:"Error in getResult fn",
+        errorDetails:err
+    })
+  }
+  }
+
 async function deleteEvent(req,res){
     try{
         const eventId=req.params.id;

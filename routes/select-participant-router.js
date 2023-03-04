@@ -47,11 +47,11 @@ async function sendDetails(req,res){
     for(let obj of sendDetailsObj){
         for(let studObj of obj.participatingStudents){
             const studObjRes=await studentCollection.find({_id:studObj.studentId});
-            studObj.name=studObjRes[0].name;
-            studObj.email=studObjRes[0].email;
-            studObj.gender=studObjRes[0].gender;
-            studObj.collegeName=studObjRes[0].collegeName;
-            studObj.profilePic=studObjRes[0].profilePic;
+            studObj.name=studObjRes[0]?.name;
+            studObj.email=studObjRes[0]?.email;
+            studObj.gender=studObjRes[0]?.gender;
+            studObj.collegeName=studObjRes[0]?.collegeName;
+            studObj.profilePic=studObjRes[0]?.profilePic;
             const studParticipateObjRes=await studentEventCollection.find({studentId:studObj.studentId});
             for(let events of studParticipateObjRes[0].eventsArray){
                 if(events.eventId == obj.eventId){
