@@ -17,6 +17,7 @@ const studentEventRouter=require("./routes/student-event-router");
 const teacherEventUploadRouter=require("./routes/teacher-event-upload-router");
 const selectParticipantRouter=require("./routes/select-participant-router");
 const subscribedUserRouter = require("./routes/subscribed-user-router.js");
+const userRouter = require("./routes/user-router.js");
 // const participatedEventRouter=require("./routes/participated-events-router");
 
 app.use(express.json());
@@ -42,6 +43,7 @@ app.use("/event/teacher",teacherEventUploadRouter);
 app.use("/auth",authRouter);
 app.use("/event",eventRouter);
 app.use("/subscribe",subscribedUserRouter);
+app.use("/user",userRouter);
 // app.use("/event/student",participatedEventRouter);
 // app.use(express.static(path.join(__dirname,"./frontend/build")));
 // app.get("*",(req,res)=>{
