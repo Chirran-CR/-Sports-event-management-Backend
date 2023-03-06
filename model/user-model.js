@@ -9,7 +9,7 @@ const userSchemna=new mongoose.Schema({
      email:{
         type:String,
         required:true,
-        unique:[true,"Email ID must be unique"]
+      //   unique:[true,"Email ID must be unique"]
      },
      designation:{
       type:String,

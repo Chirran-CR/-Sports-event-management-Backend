@@ -36,6 +36,9 @@ eventRouter
   .route("/")
   .get(getAllEvents)
 eventRouter
+  .route("/:id")
+  .get(getSingleEvent);
+eventRouter
   .route("/add")
   .post(protectedRouter,upload.single("eventBanner"),addEvent)
 eventRouter
@@ -56,8 +59,100 @@ eventRouter
 eventRouter
   .route("/delete/:id")
   .delete(protectedRouter,deleteEvent)
+eventRouter
+  .route("/addmoderator")
+  .post(addModerator);
+eventRouter
+  .route("/addscore/:id")
+  .post(addLiveScore);
+eventRouter
+  .route("/getlivescore/:id")
+  .get(getLiveScore);
 
+async function getLiveScore(req,res){
+  const eventId=req.params.id;
 
+  try{        
+    const singleEvent=await eventCollection.find({_id:eventId});
+    const liveScoreOfSingleEvent=singleEvent[0].liveScore;
+    console.log("Val of resultOfSingleEvent is:",liveScoreOfSingleEvent);
+
+    res.send({
+        message:"Obtained livescore of single events",
+        liveScoreOfSingleEvent:liveScoreOfSingleEvent
+    })
+  }catch(err){
+    console.log("Error in getLiveScore function..",err);
+    res.send({
+        message:"error in getLiveScore function",
+        errorDetails:err.message
+    })
+}
+}
+async function addLiveScore(req,res){
+  console.log("Val of req.body inside addLiveScore is:",req.body);
+  const eventId=req.params.id;
+  const selectedSport=req.body.sport;
+  try{
+      //TODO- first check if the sport is already present then update the score else add the sport with score
+      const singleEventRes=await eventCollection.find({_id:eventId});
+      const singleEvent=singleEventRes[0];
+      let alreadyPresentLiveScore=singleEvent.liveScore;
+      let isSportPresent=false;
+      alreadyPresentLiveScore.map((scoreObj)=>{
+         if(scoreObj.sport == selectedSport){
+          isSportPresent=true;
+         }
+      })
+      console.log("Val of isSportPresent is:",isSportPresent);
+      if(isSportPresent){
+        alreadyPresentLiveScore=alreadyPresentLiveScore.map((scoreObj)=>{
+             if(scoreObj.sport== selectedSport){
+              scoreObj.score={...req.body.score}
+             }
+             return scoreObj;
+        })
+      }else{
+        alreadyPresentLiveScore.push({
+          sport:selectedSport,
+          score:{...req.body.score}
+        })
+      }
+      console.log("Val of alreadyPresentLiveScore is:",alreadyPresentLiveScore);
+      const afterAddingLiveScoreRes=await eventCollection.findOneAndUpdate({_id:eventId},{liveScore:[...alreadyPresentLiveScore]},{returnOriginal:false});
+      console.log("Val of afterAddingLiveScoreRes is:",afterAddingLiveScoreRes);
+      res.send({
+        message:"Score is updated/added",
+        liveScore:alreadyPresentLiveScore,
+        afterAddingLiveScoreRes:afterAddingLiveScoreRes
+      })
+   }catch(err){
+    console.log("Error in addLiveScore function..",err);
+    res.send({
+        message:"error in addLiveScore function",
+        errorDetails:err.message
+    })
+  }
+}
+
+async function addModerator(req,res){
+  console.log("Val of req.body inside addModerator is:",req.body);
+  try{
+      // const toBeUpdateEvent=await eventCollection.find({_id:req.body._id});
+      const afterAddingModeratorRes=await eventCollection.findOneAndUpdate({_id:req.body._id},{moderators:[...req.body.moderators]},{returnOriginal:false});
+      console.log("Val of afterAddingModeratorRes is:",afterAddingModeratorRes);
+      res.send({
+        message:"Moderator is updated successfully",
+        afterAddingModeratorRes:afterAddingModeratorRes
+      })
+   }catch(err){
+    console.log("Error in addModerator function..",err);
+    res.send({
+        message:"error in addModerator function",
+        errorDetails:err.message
+    })
+  }
+}
 function protectedRouter(req,res,next){
    console.log("inside protected Router");
    //here check whether the cookies contain the jwt token and if contain then only proceed
@@ -99,6 +194,25 @@ async function getAllEvents(req,res){
             errorDetails:err.message
         })
     }
+
+}
+async function getSingleEvent(req,res){
+  const id=req.params.id;
+  try{
+      // console.log("get all events here ",req);
+      console.log("get single event here ");        
+      const singleEvent=await eventCollection.find({_id:id});
+      res.send({
+          message:"Obtained single event",
+          singleEvent:singleEvent
+      })
+  }catch(err){
+      console.log("Error in getSingleEvent function..",err);
+      res.send({
+          message:"error in getSingleEvent function",
+          errorDetails:err.message
+      })
+  }
 
 }
 function sendMailToSubscriber(subscriberEmail){
@@ -252,7 +366,8 @@ async function getResult(req,res){
   try{
     res.send({
       message:"Results of event received successfully",
-      resultOfEvent:resultOfEvent
+      resultOfEvent:resultOfEvent,
+      completeEvent:eventRes[0],
     })
   }catch(err){
     console.log("Error in getResult fn:",err);

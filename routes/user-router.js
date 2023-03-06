@@ -21,7 +21,7 @@ async function addUser(req,res){
     try{
         const userDetails=await userCollection.create(userObj);
         res.send({
-            message:"Request is received..",
+            message:"User is added to the userDatabase",
             userDetails:userDetails,
         })
     }catch(err){

@@ -61,6 +61,28 @@ const eventSchema=new mongoose.Schema({
          participatingSports:[String],
       }
      }],
+     moderators:[{
+       sport:String,
+       moderatorDetails:{
+         name:String,
+         email:String,
+         password:String,
+       }
+     }],
+     liveScore:[{
+      sport:String,
+      score:{
+         matchBetween:{
+            team1:String,
+            team2:String
+         },
+         presentScore:{
+            team1Score:String,
+            team2Score:String,
+         },
+         commentary:String,
+      }
+     }],
      venue:{
         type:String,
         required:true,
