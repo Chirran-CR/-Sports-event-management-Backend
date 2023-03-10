@@ -63,11 +63,58 @@ eventRouter
   .route("/addmoderator")
   .post(addModerator);
 eventRouter
+  .route("/updatemoderator")
+  .post(updateModerator);
+eventRouter
+  .route("/removemoderator")
+  .post(removeModerator);
+eventRouter
   .route("/addscore/:id")
   .post(addLiveScore);
 eventRouter
   .route("/getlivescore/:id")
   .get(getLiveScore);
+
+
+async function removeModerator(req,res){
+  try{
+    const afterRemovingModeratorRes=await eventCollection.findOneAndUpdate({_id:req.body.singleEvent._id},{moderators:[...req.body.singleEvent.moderators]},{returnOriginal:false});
+    console.log("Val of afterRemovingModeratorRes is:",afterRemovingModeratorRes);
+    res.send({
+      message:"Moderator is updated",
+      afterRemovingModeratorRes:afterRemovingModeratorRes,
+      errorPresent:false,
+    })
+  }catch(err){
+    console.log("Error in updateModerator function..",err);
+    res.send({
+        message:"error in updateModerator function",
+        errorDetails:err.message,
+        errorPresent:true,
+    })
+  }
+}
+
+
+async function updateModerator(req,res){
+  try{
+    //todo- find the event through evnetId then update the moderator details by findOneAndUpdate,
+    const afterUpdatingModeratorRes=await eventCollection.findOneAndUpdate({_id:req.body.singleEvent._id},{moderators:[...req.body.singleEvent.moderators]},{returnOriginal:false});
+    console.log("Val of afterUpdatingModeratorRes is:",afterUpdatingModeratorRes);
+    res.send({
+      message:"Moderator is updated",
+      errorPresent:false,
+    })
+  }catch(err){
+    console.log("Error in updateModerator function..",err);
+    res.send({
+        message:"error in updateModerator function",
+        errorDetails:err.message,
+        errorPresent:true,
+    })
+  }
+}
+
 
 async function getLiveScore(req,res){
   const eventId=req.params.id;

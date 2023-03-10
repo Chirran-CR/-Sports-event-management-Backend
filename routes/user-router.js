@@ -10,6 +10,28 @@ userRouter
 userRouter
     .route("/get")
     .post(getUser);
+userRouter
+    .route("/remove")
+    .post(removeUser);
+
+
+async function removeUser(req,res){
+    try{
+        const userDeleteRes=await userCollection.findOneAndDelete({email:req.body.email});
+        console.log("Val of userDeleteRes after delete is:",userDeleteRes);
+        res.send({
+            message:"user deleted from user db successfully",
+            userDeleteRes:userDeleteRes,
+            errorPresent:false,
+        })
+    }catch(err){
+        console.log("Error in removeUser fn of userRouter:",err);
+        res.send({
+            message:"Error in removeUser fn of userRouter",
+            errorDetails:err
+        })
+    }
+}
 
 async function addUser(req,res){
     console.log("Req.body received is:",req.body);
