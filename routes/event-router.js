@@ -295,12 +295,19 @@ function sendMailToSubscriber(subscriberEmail){
     }
 }
 async function addEvent(req,res){
-    console.log("val of req.body is:",req.body);
-    console.log("val of req.file is:",req.file);
+    console.log("val of req.body inside addEvent of eventRouter is:",req.body);
+    console.log("Type of registartion deadline is:",typeof req.body.registrationDeadline);
+
+    console.log("val of req.file inside addEvent of eventRouter is:",req.file);
    try{
         const receivedEvent=req.body;
         receivedEvent.eventBanner=req.file.filename;
+        // receivedEvent.registrationDeadline=req.body.registrationDeadline;
+        // console.log("Val of received event inside addEvent of eventRouter is:",receivedEvent);
         const addedEvent=await eventCollection.create(receivedEvent);
+        // const addEventObj= new eventCollection({...receivedEvent});
+        // const addedEvent= await addEventObj.save();
+        console.log("Val of receivedEvent is :",receivedEvent);
         const allSubscribersRes=await subscribedUserCollection.find({});
         console.log("Val of allSubscriberRes is",allSubscribersRes)//received array of subscriber Obj
         const emailOfSubscribedUser=allSubscribersRes.map((user)=>{
@@ -320,14 +327,16 @@ async function addEvent(req,res){
              }
            }
         })
-        const allTheInfo = emailOfSubscribedUser.map((mailId)=>{
-          sendMailToSubscriber(mailId);
-        })
-        console.log("Val of all the info from sentMail function:",allTheInfo);
+        console.log("val of subscribed user is:",emailOfSubscribedUser);
+
+        // const allTheInfo = emailOfSubscribedUser.map((mailId)=>{
+        //   sendMailToSubscriber(mailId);
+        // })
+        // console.log("Val of all the info from sentMail function:",allTheInfo);
         res.send({
              message:"Event added successfully..",
              addedEventDetails:addedEvent,
-             allTheInfo:allTheInfo
+            //  allTheInfo:allTheInfo
         })
    }catch(err){
     console.log("Error in addEvent fn:",err);

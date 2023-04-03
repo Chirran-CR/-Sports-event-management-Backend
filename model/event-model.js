@@ -26,18 +26,27 @@ const eventSchema=new mongoose.Schema({
         required:true
      },
      selectedStudents:[{
-      selectedSport:{
-         type:String
-      },
-      studentInfo:[{
-       studentId:String,
-       profilePic:String,
-       name:String,
-       email:String,
-       collegeName:String,
-       gender:String,
-       participatingSports:[String],
+         selectedSport:{
+            type:String
+         },
+         studentInfo:[{
+         studentId:String,
+         profilePic:String,
+         name:String,
+         email:String,
+         collegeName:String,
+         gender:String,
+         participatingSports:[String],
      }]}],
+     registrationDeadline:{
+      type:String,
+      // default:() => Date.now() + 4*24*60*60*1000,//4 days from today
+     },
+     eventDate:{
+         // type:Date,
+         type:String,
+         // default:() => Date.now() + 7*24*60*60*1000,//7 days from today
+     },
      result:[{
       selectedSport:{
          type:String
