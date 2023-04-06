@@ -47,6 +47,9 @@ const eventSchema=new mongoose.Schema({
          type:String,
          // default:() => Date.now() + 7*24*60*60*1000,//7 days from today
      },
+     price:{
+      type:Number,
+     },
      result:[{
       selectedSport:{
          type:String

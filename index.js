@@ -8,6 +8,7 @@ const path=require("path");
 dotenv.config({path:"./configuration/config.env"});
 require("./database/conn.js");
 const port=process.env.PORT;
+
 const app=express();
 
 // const teacherRouter=require("./routes/teacher-router");
@@ -21,6 +22,7 @@ const userRouter = require("./routes/user-router.js");
 const moderatorRouter = require("./routes/moderator-router.js");
 const teacherRouter = require("./routes/teacher-router.js");
 const studentRouter = require("./routes/student-router.js");
+const paymentRouter=require("./routes/payment-router.js");
 // const participatedEventRouter=require("./routes/participated-events-router");
 
 app.use(express.json());
@@ -50,6 +52,7 @@ app.use("/user",userRouter);
 app.use("/moderator",moderatorRouter);
 app.use("/teacher",teacherRouter);
 app.use("/student",studentRouter);
+app.use("/payment",paymentRouter);
 // app.use("/event/student",participatedEventRouter);
 // app.use(express.static(path.join(__dirname,"./frontend/build")));
 // app.get("*",(req,res)=>{
