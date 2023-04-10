@@ -329,10 +329,10 @@ async function addEvent(req,res){
         })
         console.log("val of subscribed user is:",emailOfSubscribedUser);
 
-        // const allTheInfo = emailOfSubscribedUser.map((mailId)=>{
-        //   sendMailToSubscriber(mailId);
-        // })
-        // console.log("Val of all the info from sentMail function:",allTheInfo);
+        const allTheInfo = emailOfSubscribedUser.map((mailId)=>{
+          sendMailToSubscriber(mailId);
+        })
+        console.log("Val of all the info from sentMail function:",allTheInfo);
         res.send({
              message:"Event added successfully..",
              addedEventDetails:addedEvent,

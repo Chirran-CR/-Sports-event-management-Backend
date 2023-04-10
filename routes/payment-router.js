@@ -55,19 +55,22 @@ async function checkPayment(req,res){
             cvc: '314',
           },
         });
+        console.log("Val of paymentMethod is:",paymentMethod);
         const customer = await Stripe.customers.create({
           description: 'My First Test Customer (created for sport event test)',
         });
+        console.log("Val of customer is:",customer);
+
         const paymentMethodAttach = await Stripe.paymentMethods.attach(
           paymentMethod.id,
           {customer: customer.id}
         );
-        
+        console.log("Val of paymethodAttach is:",paymentMethodAttach);
         await Stripe.paymentIntents.create({
           // source:token.id,
           amount: amount,
           currency: 'inr',
-          automatic_payment_methods: {enabled: true},
+          // automatic_payment_methods: {enabled: true},
         });
         status = 'success';
       } catch (error) {
