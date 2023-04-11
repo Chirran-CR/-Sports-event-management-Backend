@@ -31,6 +31,7 @@ async function checkPayment(req,res){
       let status, error;
       const { token, amount } = req.body;
     console.log("Val of token is:",token);
+    let stripeSite="";
     try {
       // await Stripe.charges.create({
         //   source: token.id,
@@ -46,6 +47,16 @@ async function checkPayment(req,res){
         //     cvc: '314',
         //   },
         // });
+        const paymentIntent= await Stripe.paymentIntents.create({
+          // source:token.id,
+          amount: amount,
+          currency: 'inr',
+          payment_method_types:['card'],
+          confirmation_method: 'manual',
+          // confirm: true,
+          // automatic_payment_methods: {enabled: true},
+        });
+        console.log("Val of paymentIntent:",paymentIntent);
         const paymentMethod = await Stripe.paymentMethods.create({
           type: 'card',
           card: {
@@ -66,17 +77,21 @@ async function checkPayment(req,res){
           {customer: customer.id}
         );
         console.log("Val of paymethodAttach is:",paymentMethodAttach);
-        await Stripe.paymentIntents.create({
-          // source:token.id,
-          amount: amount,
-          currency: 'inr',
-          // automatic_payment_methods: {enabled: true},
-        });
+        const paymentIntentConfirm = await Stripe.paymentIntents.confirm(
+          paymentIntent.id,
+          {payment_method: 'pm_card_visa',
+          use_stripe_sdk:true}
+          // {payment_method: paymentMethod.id}
+        );
+        console.log("Val of paymentIntentConfirm is:",paymentIntentConfirm);
+        //paymentIntentConfirm.next_action.use_stripe_sdk.stripe_js
+        stripeSite= paymentIntentConfirm.next_action.use_stripe_sdk.stripe_js;
+        
         status = 'success';
       } catch (error) {
       console.log(error);
       status = 'Failure';
     }
-    res.json({ error, status });
+    res.json({ error, status,site:stripeSite });
 }
 module.exports=paymentRouter;

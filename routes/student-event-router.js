@@ -5,6 +5,8 @@ const studentEventRouter=express.Router();
 const studentEventCollection=require("../model/student-event-model");
 const eventCollection=require("../model/event-model");
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
+const nodemailer=require("nodemailer");
+
 
 studentEventRouter
   .route("/:id")
@@ -20,10 +22,69 @@ studentEventRouter
 //   .post(deleteParticipatingEvent)
   .route("/:id")
   .delete(deleteParticipatingEvent)
+studentEventRouter
+    .route("/sendfeedback")
+    .post(handleSendFeedback);
+
 
  
 
 let studentId;
+function sendFeedbackMail(feedbackObj){
+        try{
+          const transporter=nodemailer.createTransport({
+            service:"gmail",
+            auth:{
+              user:process.env.MAIL_ID,
+              pass:process.env.MAIL_PSD,
+            }
+          })
+          const mailOptions={
+             from:process.env.MAIL_ID,
+             to:feedbackObj.teacherEmail,
+             subject:`Feedback for ${feedbackObj.eventName}`,
+             html:`<h1>Greetings from Chirran..!</h1>
+                   <h2>Feedback received for ${feedbackObj.eventName} for sport ${feedbackObj.sportName}
+                   by Student named ${feedbackObj.studentName} is</h2>
+                   <h3>${feedbackObj.feedback}</h3>
+                   <h2>Thank you</h2>
+                   <h4>Chittaranjan</h4>`
+            }
+          transporter.sendMail(mailOptions,(error,info)=>{
+            if(error){
+              console.log("Error inside transporter.sendMail function & error is:",error);
+            }else{
+              console.log("Email sent & info.resposne is:"+info.response);
+              console.log("Val of info is:",info);
+              return info;
+            }
+          })  
+        }catch(err){
+          console.log("Error in sendMailToSubscriber function ..",err.message);
+          return err.message;
+        }
+    
+}
+function handleSendFeedback(req,res){
+    console.log("Inside handleSendFeedback of student event router...");
+    console.log("Val of req.body is:",req.body);
+    const feedbackObj={studentName:req.body.studentName,teacherEmail:req.body.teacherEmail,feedback:req.body.feedback,
+    eventName:req.body.eventName,sportName:req.body.sportName};
+    console.log("Val of feedback Obj is:",feedbackObj);
+    const mailRes=sendFeedbackMail(feedbackObj);
+    console.log("Val of mailRes received from sendFeedbackMail is:",mailRes);
+
+    try{
+        res.send({
+            message:"Feedback Received.."
+        })
+    }catch(err){
+        console.log("Error in handle sendFeedback of student router");
+        res.send({
+            message:"Error in handle sendFeedback of student router"
+        })
+    }
+}
 function protectedRouter(req,res,next){
    console.log("inside protected Router of student-event-router"); 
    //here check whether the cookies contain the jwt token and if contain then only proceed

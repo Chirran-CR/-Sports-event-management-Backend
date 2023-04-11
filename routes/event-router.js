@@ -74,8 +74,131 @@ eventRouter
 eventRouter
   .route("/getlivescore/:id")
   .get(getLiveScore);
+eventRouter
+  .route("/sendmailselectedstudent")
+  .post(handleSendMailToSelectedStudent)
+eventRouter
+  .route("/sendresultmail")
+  .post(handleSendResultMail)
 
 
+
+function sendResultMail(mailId,result,eventName,sportName){
+    try{
+      const transporter=nodemailer.createTransport({
+        service:"gmail",
+        auth:{
+          user:process.env.MAIL_ID,
+          pass:process.env.MAIL_PSD,
+        }
+      })
+      const mailOptions={
+         from:process.env.MAIL_ID,
+         to:mailId,
+         subject:`Result of event ${eventName} from Sport Event Team`,
+         html:`<h1>Greetings from Chirran of sport event management..!</h1>
+               <h4>Congratulation..!You have ${result} in the game of ${sportName}
+               in event named ${eventName}...
+               </h4>
+               <h3>Thank you</h3>
+               <h5>Chittaranjan</h5>
+               <h6>Management Team</h6>`
+        }
+      transporter.sendMail(mailOptions,(error,info)=>{
+        if(error){
+          console.log("Error inside transporter.sendMail function & error is:",error);
+        }else{
+          console.log("Email sent & info.resposne is:"+info.response);
+          console.log("Val of info is:",info);
+          return info;
+        }
+      })  
+    }catch(err){
+      console.log("Error in sendMailToSubscriber function ..",err.message);
+      return err.message;
+    }
+
+}
+
+function handleSendResultMail(req,res){
+  console.log("Val of req.body inside handleSendResultMail is:",req.body);
+  const winnerMail=req.body.selectedOutcome.winner;
+  const runnersUpMail=req.body.selectedOutcome.runnersUp;
+  const eventName=req.body.eventName;
+  const sportName=req.body.selectedSport;
+  try{
+    // sendResultMail(winnerMail,"Won",eventName,sportName);
+    // sendResultMail(runnersUpMail,"got the second place ",eventName,sportName);
+    res.send({
+      message:"Email has been sent to the winner and runnersup",
+    })
+  }catch(err){
+    console.log("Error in handleSendResultMail function..",err);
+    res.send({
+        message:"error in handleSendResultMail function",
+        errorDetails:err.message,
+    })
+  }
+}
+
+function sendMailToSelectedStudent(mailId,eventName,sportName){
+    try{
+      const transporter=nodemailer.createTransport({
+        service:"gmail",
+        auth:{
+          user:process.env.MAIL_ID,
+          pass:process.env.MAIL_PSD,
+        }
+      })
+      const mailOptions={
+         from:process.env.MAIL_ID,
+         to:mailId,
+         subject:"Selection Mail from Sport Event Team",
+         html:`<h1>Greetings from Chirran..!</h1>
+               <h3>Congratulation..!You have been selected for ${eventName} for ${sportName}..
+               Work hard and win the event.Best wishes.
+               </h3>
+               <h3>Thank you</h3>
+               <h4>Chittaranjan</h4>
+               <h5>Management Team</h5>`
+        }
+      transporter.sendMail(mailOptions,(error,info)=>{
+        if(error){
+          console.log("Error inside transporter.sendMail function & error is:",error);
+        }else{
+          console.log("Email sent & info.resposne is:"+info.response);
+          console.log("Val of info is:",info);
+          return info;
+        }
+      })  
+    }catch(err){
+      console.log("Error in sendMailToSubscriber function ..",err.message);
+      return err.message;
+    }
+}
+async function handleSendMailToSelectedStudent(req,res){
+  console.log("Val of req.body inside hanldeSendMailToSelectedStudent is:",req.body);
+  const emailOfSelectedStudent=req.body.sendSelectedStudent.map(studentObj=>{
+     return studentObj.email;
+  })
+  
+  console.log("Val of emailOfSelectedStudent is:",emailOfSelectedStudent);
+  emailOfSelectedStudent.map(mailId=>{
+    //  sendMailToSelectedStudent(mailId,req.body.selectedEvent.eventName,req.body.selectedSport);
+  })
+  try{
+    res.send({
+      message:"response from handleSendMailToSelectedStudent function",
+      emailOfSelectedStudent:emailOfSelectedStudent,
+  })
+  }catch(err){
+    console.log("Error in handleSendMailToSelectedStudent function..",err);
+    res.send({
+        message:"error in handleSendMailToSelectedStudent function",
+        errorDetails:err.message,
+    })
+  }
+}
 async function removeModerator(req,res){
   try{
     const afterRemovingModeratorRes=await eventCollection.findOneAndUpdate({_id:req.body.singleEvent._id},{moderators:[...req.body.singleEvent.moderators]},{returnOriginal:false});
