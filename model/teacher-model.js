@@ -33,7 +33,11 @@ const teacherSchema=new mongoose.Schema({
     },
     profilePic:{
         type:String,
-       }
+    },
+    verified:{
+        type:Boolean,
+        default:false,
+    }
 })
 
 

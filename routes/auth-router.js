@@ -3,11 +3,15 @@ const bcrypt=require("bcrypt");
 const jsonwebtoken=require("jsonwebtoken");
 const multer=require("multer");
 const path=require("path");
+const crypto = require("crypto");
 
 const authRouter = express.Router();
 const teacherCollection = require("../model/teacher-model");
 const studentCollection = require("../model/student-model");
+const tokenCollection = require("../model/token-model");
 const jsonSecretKey=process.env.JSON_SECRET_KEY;
+const sendVerificationMail= require("../utils/mailFunctions");
+const userCollection = require("../model/user-model");
 
 
 const storage=multer.diskStorage({
@@ -36,8 +40,53 @@ authRouter.route("/teacher/logout").get(teacherLogout);
 authRouter.route("/student/login").post(studentLogin);
 authRouter.route("/student/signup").post(upload.single("profilePic"),studentSignup);
 authRouter.route("/student/logout").get(studentLogout);
+authRouter.route("/:designation/:id/verify/:token").get(verifyEmailForRegistration);
 
 
+
+async function verifyEmailForRegistration(req,res){
+    try{
+      const designation=req.params.designation;
+      console.log("Val of designation is:",designation);
+      const collection=designation=="teacher"? teacherCollection:studentCollection;
+      console.log("Val of collection is:",collection);
+      const user=await collection.findOne({_id:req.params.id});
+      console.log("Val of user is:",user);
+
+      if(!user) return res.status(400).send({message:"Invalid Link"});
+      const token = await tokenCollection.findOne({
+        userId: user._id,
+        token: req.params.token,
+      });
+      console.log("Val of token inside verifyEmail is:",token);
+
+      if (!token) return res.status(400).send({ message: "Invalid link for token" });
+  
+      await collection.updateOne({ _id: user._id},{ $set:{verified: true} });
+      await token.remove();
+      const updatedUser=await collection.findOne({_id:req.params.id});
+      console.log("Val of updatedUser is:",updatedUser);
+      const userObj={
+        name:updatedUser.name,
+        email:updatedUser.email,
+        designation:designation,
+    }
+        // await userCollection.dropIndexes();
+        const userDetails=await userCollection.create(userObj);
+        // res.send({
+        //     message:"User is added to the userDatabase",
+        //     userDetails:userDetails,
+        // })
+       console.log("Val of userDetails is:",userDetails);
+      res.status(200).send({ message: "Email verified successfully" });
+    }catch(err){
+      res.send({//to show the error in frontend becz request full fill nhi ho rha h status code 404 add karne par
+        message:"Error in verifyEmailForRegistration function",
+        errorMessage:err.message,
+        myError:true
+      })
+    }
+}
 
 
 async function teacherLogin(req, res) {
@@ -47,25 +96,34 @@ async function teacherLogin(req, res) {
       
       console.log("Stored tEAcher",storedTeacher);
       if(storedTeacher){
-          const psdMatched=await bcrypt.compare(teacherInfo.password,storedTeacher.password);
-          console.log("psdMatched value:",psdMatched);
-          if(psdMatched){
-            console.log("Login successful");
-            const teacherToken=jsonwebtoken.sign({teacherId:storedTeacher._id},jsonSecretKey);
-            // console.log("teacher token ki value:",teacherToken);
-            res.cookie("isTeacherLogin",teacherToken);
-
-            res.status(200).send({
-              message:"Teacher Login successful..",
-              teacherDetails:storedTeacher,
-              myError:false
-            })
-          }else{
-            console.log("Password did not matched..");
+          if(storedTeacher.verified == false){
             res.send({
-              message:"Invalid credetials..",
+              message:"Teacher is not verified..",
+              showMessage:"You are not Verified, click on the received mail to verify",
+              teacherDetails:storedTeacher,
               myError:true
             })
+          }else{
+            const psdMatched=await bcrypt.compare(teacherInfo.password,storedTeacher.password);
+            console.log("psdMatched value:",psdMatched);
+            if(psdMatched){
+              console.log("Login successful");
+              const teacherToken=jsonwebtoken.sign({teacherId:storedTeacher._id},jsonSecretKey);
+              // console.log("teacher token ki value:",teacherToken);
+              res.cookie("isTeacherLogin",teacherToken);
+
+              res.status(200).send({
+                message:"Teacher Login successful..",
+                teacherDetails:storedTeacher,
+                myError:false
+              })
+            }else{
+              console.log("Password did not matched..");
+              res.send({
+                message:"Invalid credetials..",
+                myError:true
+              })
+            }
           }
       }else{
           console.log("Email id not present in db so first sign up");
@@ -98,6 +156,13 @@ async function teacherSignup(req, res) {
   try {
     const teacherDoc=new teacherCollection(teacherData);
     const savedTeacherData=await teacherDoc.save();
+    const token=await new tokenCollection({
+        userId:savedTeacherData._id,
+        token:crypto.randomBytes(32).toString("hex"),
+    }).save();  
+    console.log("savedTeacherData in teacherSignup fn is:",savedTeacherData);
+    const url=`${process.env.BASE_URL}/auth/teacher/${savedTeacherData._id}/verify/${token.token}`;
+    await sendVerificationMail(savedTeacherData.email,url);
     res.send({
       message: "Teacher signed up successfully...",
       teacherData: savedTeacherData,
