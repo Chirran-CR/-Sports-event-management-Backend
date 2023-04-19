@@ -53,14 +53,17 @@ async function verifyEmailForRegistration(req,res){
       const user=await collection.findOne({_id:req.params.id});
       console.log("Val of user is:",user);
 
-      if(!user) return res.status(400).send({message:"Invalid Link"});
+      // if(!user) return res.status(400).send({message:"Invalid Link"});
+      if (!user) res.sendFile(__dirname+'/htmlPages/failedScreen.html');
+
       const token = await tokenCollection.findOne({
         userId: user._id,
         token: req.params.token,
       });
       console.log("Val of token inside verifyEmail is:",token);
 
-      if (!token) return res.status(400).send({ message: "Invalid link for token" });
+      // if (!token) return res.status(400).send({ message: "Invalid link for token" });
+      if (!token) res.sendFile(__dirname+'/htmlPages/failedScreen.html');
   
       await collection.updateOne({ _id: user._id},{ $set:{verified: true} });
       await token.remove();
@@ -72,19 +75,23 @@ async function verifyEmailForRegistration(req,res){
         designation:designation,
     }
         // await userCollection.dropIndexes();
-        const userDetails=await userCollection.create(userObj);
+        const userDetails= await userCollection.create(userObj);
         // res.send({
         //     message:"User is added to the userDatabase",
         //     userDetails:userDetails,
         // })
        console.log("Val of userDetails is:",userDetails);
-      res.status(200).send({ message: "Email verified successfully" });
+      // res.status(200).send({ message: "Email verified successfully" });
+      res.sendFile(__dirname+'/htmlPages/successfulScreen.html');
     }catch(err){
-      res.send({//to show the error in frontend becz request full fill nhi ho rha h status code 404 add karne par
-        message:"Error in verifyEmailForRegistration function",
-        errorMessage:err.message,
-        myError:true
-      })
+      // res.send({//to show the error in frontend becz request full fill nhi ho rha h status code 404 add karne par
+      //   message:"Error in verifyEmailForRegistration function",
+      //   errorMessage:err.message,
+      //   myError:true
+      // })
+      console.log("Error in verifyEmailForRegistration function and errr is:",err.message);
+     res.sendFile(__dirname+'/htmlPages/failedScreen.html');
+
     }
 }
 
@@ -185,6 +192,14 @@ async function studentLogin(req, res) {
       
       console.log("Stored student",storedStudent);
       if(storedStudent){
+        if(storedStudent.verified == false){
+          res.send({
+            message:"Teacher is not verified..",
+            showMessage:"You are not Verified, click on the received mail to verify",
+            studentDetails:storedStudent,
+            myError:true
+          })
+        }else{
           const psdMatched=await bcrypt.compare(studentInfo.password,storedStudent.password);
           console.log("psdMatched value:",psdMatched);
           if(psdMatched){
@@ -205,6 +220,7 @@ async function studentLogin(req, res) {
               myError:true,
             })
           }
+        }
       }else{
           console.log("Email id not present in db so first sign up");
           res.send({
@@ -238,10 +254,17 @@ async function studentSignup(req, res) {
   try {
     const studentDoc=new studentCollection(studentData);
     const savedStudentData=await studentDoc.save();
+    const token=await new tokenCollection({
+      userId:savedStudentData._id,
+      token:crypto.randomBytes(32).toString("hex"),
+    }).save();  
+    console.log("savedStudentData in studentSignup fn is:",savedStudentData);
+    const url=`${process.env.BASE_URL}/auth/student/${savedStudentData._id}/verify/${token.token}`;
+    await sendVerificationMail(savedStudentData.email,url);
     res.send({
-      message: "Student signed up successfully...",
+      message: "Verification mail has been sent successfully...",
       teacherData: savedStudentData,
-      myError:false
+      myError:false,
     });
   } catch (err) {
     console.log("Error in studentSignup function and value is:", err);

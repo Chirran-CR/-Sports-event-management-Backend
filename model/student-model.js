@@ -29,7 +29,11 @@ const studentSchema=new mongoose.Schema({
      },
      profilePic:{
       type:String,
-     }
+     },
+     verified:{
+      type:Boolean,
+      default:false,
+  }
 });
 studentSchema.pre("save",async function (){
     const studentDoc=this;
