@@ -32,6 +32,7 @@ app.use(cookieParser());
 // app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 const corsOrigin ={
     origin:['http://localhost:3000',"https://sports-event.onrender.com"],//or whatever port your frontend is using
+    headers:["Content-Type"],
     credentials:true,            
     optionSuccessStatus:200
 }
