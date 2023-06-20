@@ -24,12 +24,9 @@ const moderatorRouter = require("./routes/moderator-router.js");
 const teacherRouter = require("./routes/teacher-router.js");
 const studentRouter = require("./routes/student-router.js");
 const paymentRouter=require("./routes/payment-router.js");
+const { default: mongoose } = require("mongoose");
 // const participatedEventRouter=require("./routes/participated-events-router");
 
-app.use(express.json());
-app.use(cookieParser());
-// app.use(cors({origin: true, credentials: true}));
-// app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 const corsOrigin ={
     origin:['http://localhost:3000',"https://sports-event.onrender.com"],//or whatever port your frontend is using
     headers:["Content-Type"],
@@ -37,6 +34,11 @@ const corsOrigin ={
     optionSuccessStatus:200
 }
 app.use(cors(corsOrigin));
+// app.options('*', cors()); 
+app.use(express.json());
+app.use(cookieParser());
+// app.use(cors({origin: true, credentials: true}));
+// app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 // app.use("/event", (req,res)=>{
 //     res.send({
 //         message:"working properly",
@@ -62,6 +64,7 @@ app.use("/payment",paymentRouter);
     // });
 app.use("/images",express.static(path.join(__dirname,'uploads')));
 app.use("/selectparticipant",selectParticipantRouter);
+console.log(mongoose.connection.readyState);
 app.listen(port,()=>{
     console.log(`Server is listening at port: ${port}`);
 });
